@@ -1,21 +1,21 @@
-# TabZero — Cross-Journey Consistency Review v0.1
+﻿# SettleZero — Cross-Journey Consistency Review v0.1
 
 **Status:** Completed  
 **Scope:** Journeys 1–6 and all product decisions confirmed during review
 
 ## 1. Purpose
 
-This document consolidates the decisions made across TabZero's product journeys and checks them for contradictions, missing states, ambiguous behavior, and edge cases.
+This document consolidates the decisions made across SettleZero's product journeys and checks them for contradictions, missing states, ambiguous behavior, and edge cases.
 
 The purpose is to establish a consistent behavioral model before freezing:
 
-> **TabZero — Product Specification v0.1**
+> **SettleZero — Product Specification v0.1**
 
 This review does not define implementation details. Technical architecture, database schema, synchronization protocol, API design, and hosting remain separate.
 
 ## 2. Core Product Principles
 
-TabZero follows these principles:
+SettleZero follows these principles:
 
 1. Local-first
 2. Offline-capable
@@ -37,7 +37,7 @@ TabZero follows these principles:
 
 ## 3. Identity Model
 
-TabZero has four distinct identities.
+SettleZero has four distinct identities.
 
 ### 3.1 Group ID
 Every group has an immutable Group ID. The displayed group name is not an identifier.
@@ -93,7 +93,7 @@ Active · Unclaimed members can be:
 - Expense payers
 - Settlement parties
 
-This allows accurate ledger maintenance before everyone installs TabZero.
+This allows accurate ledger maintenance before everyone installs SettleZero.
 
 ## 8. Payer and Participant Rules
 
@@ -157,7 +157,7 @@ Only Note supports newline characters.
 
 ## 13. Created By vs. Paid By
 
-TabZero always distinguishes who performed an action from who the financial event concerns.
+SettleZero always distinguishes who performed an action from who the financial event concerns.
 
 Example:
 
@@ -363,7 +363,7 @@ The recovery transition is atomic, idempotent, and recorded permanently in group
 
 ## 30. Local-First Architecture
 
-TabZero always reads the local database first.
+SettleZero always reads the local database first.
 
 ```text
 Open App
@@ -451,7 +451,7 @@ A working invite link becomes available after the group first synchronizes with 
 
 ## 37. Backend Outage
 
-If the backend is unavailable, TabZero continues working locally.
+If the backend is unavailable, SettleZero continues working locally.
 
 Server-dependent actions such as joining through an invite require connectivity.
 
@@ -489,7 +489,7 @@ JSON merge into an existing group is out of scope for v0.1.
 
 ## 42. Reinstallation
 
-Reinstalling TabZero destroys the old local device state.
+Reinstalling SettleZero destroys the old local device state.
 
 Recovery is possible through existing-member reclaim, server synchronization, or JSON recovery.
 
@@ -508,7 +508,7 @@ Examples:
 - Administrative approval
 - Explicit settlement notification
 
-TabZero does not notify users about every expense or balance change.
+SettleZero does not notify users about every expense or balance change.
 
 Sending a settlement notification does not itself create a settlement.
 
@@ -657,11 +657,11 @@ The product model is internally consistent after the review.
 
 The next document should consolidate the entire product into one authoritative specification:
 
-> **TabZero — Product Specification v0.1**
+> **SettleZero — Product Specification v0.1**
 
 After that:
 
-> **TabZero — Technical Architecture v0.1**
+> **SettleZero — Technical Architecture v0.1**
 
 Technical Architecture will define the Android architecture, local database, synchronization protocol, API, backend, security model, hosting, and deployment strategy.
 
@@ -669,6 +669,6 @@ Technical Architecture will define the Android architecture, local database, syn
 
 > **Split bills, not subscriptions. Clear the tab. Keep the app free.**
 
-TabZero should remain:
+SettleZero should remain:
 
 > **Local-first. Offline-capable. Server-synchronized. History-preserving. Free. Boring. Reliable.**

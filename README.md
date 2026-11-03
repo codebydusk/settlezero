@@ -1,2 +1,2 @@
-# tabzero
-Split bills, not subscriptions.
+# SettleZero
+Split bills, settle to zero. Keep the app free!
