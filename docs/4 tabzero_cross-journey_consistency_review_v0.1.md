@@ -61,6 +61,8 @@ A member can exist in these states:
 
 Active unclaimed members can participate in the financial ledger.
 
+When a member voluntarily leaves a group, their state transitions to **Archived** (rather than Active · Unclaimed). This ensures they are not mistakenly added to future expenses while preserving all historical debt relationships and allowing them to settle debts or reclaim their identity if they rejoin later.
+
 Archived members retain historical financial relationships but cannot participate in normal new activity.
 
 ## 5. Member Name Rules
@@ -97,11 +99,9 @@ This allows accurate ledger maintenance before everyone installs TabZero.
 
 Every expense has exactly one payer.
 
-A claimed member may be a payer only when participating in the expense.
+Any active member (Claimed or Active · Unclaimed) may be the payer even when not participating in the expense (e.g. fronting a cost or buying a shared item for other members).
 
-An Active · Unclaimed member may be the payer even when not a participant.
-
-An archived member cannot be the payer of a new expense.
+An archived member cannot be the payer or participant of a new expense.
 
 Multiple payers per expense are out of scope for v0.1.
 
@@ -141,9 +141,9 @@ Each group has one currency value.
 
 There is no automatic conversion.
 
-The currency is intentionally simple and can be changed. No historical conversion system is introduced in v0.1.
+The currency can be changed freely until the first financial transaction (expense or settlement) is recorded. Once the first transaction exists, the group currency is permanently locked to prevent corruption of historical ledger balances.
 
-Amounts are stored internally as integer minor units rather than floating-point values.
+Amounts are stored internally as integer minor units (`Long`) using standard ISO-4217 currency scale (e.g., 2 decimals for INR/USD, 0 for JPY, 3 for KWD). Floating-point arithmetic is strictly prohibited in financial calculations.
 
 ## 12. Text Rules
 
@@ -242,6 +242,11 @@ Simplify is **ON by default**.
 
 It minimizes the number of repayments while preserving every member's net balance.
 
+To guarantee identical results across all distributed devices, the greedy min-cash-flow algorithm applies a strict deterministic tie-breaker:
+1. Debtors sorted ascending by net balance; ties broken by `Member ID` (lexicographical UUID).
+2. Creditors sorted descending by net balance; ties broken by `Member ID` (lexicographical UUID).
+3. Greedy matching across sorted sets.
+
 Simplification is a derived presentation, not an authoritative financial transaction.
 
 The setting is **group-level**. Changing it changes the group's primary repayment presentation and never changes the ledger.
@@ -322,11 +327,14 @@ Duplicate names are prevented.
 
 ## 27. Existing Member Claim
 
-Claiming an existing member requires approval.
+Claiming an existing member requires administrator approval.
 
-Approval must be atomic, idempotent, and server-authoritative.
+To prevent spoofing or unauthorized takeovers via public invite links:
+- The claimant device generates and displays a short 4-digit verification code (Short Authentication String / SAS), e.g., `7294`.
+- The Admin's approval screen displays the matching claim along with the verification code (`Rahul - Code: 7294`).
+- The Admin verifies the code out-of-band (or in person) with the claimant before tapping Approve.
 
-Once approved, the existing Member ID is associated with the new device.
+Approval must be atomic, idempotent, and server-authoritative. Once approved, the existing Member ID is associated with the new device.
 
 ## 28. Super Admin and Admin
 
@@ -344,17 +352,14 @@ Admins can rename any member, including another Admin, but cannot change Super A
 
 ## 29. Super Admin Recovery
 
-If the Super Admin is unavailable, existing Admins can initiate recovery.
+The Super Admin cannot voluntarily leave without first transferring ownership to an active member.
 
-Recovery requires a majority of Admins:
+If the Super Admin device is lost or permanently inactive:
+1. An emergency recovery request can be initiated after **30 days of Super Admin inactivity**.
+2. To avoid distributed voting deadlocks in small groups, ownership deterministically cascades to the **earliest-promoted active Admin**.
+3. If no other Admins exist, the ownership cascades to the **earliest-joined active claimed member**.
 
-`floor(N / 2) + 1`
-
-The recovery operation is atomic and idempotent.
-
-If no Admins remain, a majority of active claimed members can elect a new Super Admin.
-
-Unclaimed and archived members do not participate in the election.
+The recovery transition is atomic, idempotent, and recorded permanently in group history.
 
 ## 30. Local-First Architecture
 
@@ -621,15 +626,18 @@ The product model is internally consistent after the review.
 | Area | Final Decision |
 |---|---|
 | Member names | Unique across active + unclaimed + archived |
-| Simplify | Group-level, ON by default |
+| Member departure | Voluntary leave transitions to Archived (prevents new charges) |
+| Simplify | Group-level, ON by default, deterministic tie-breaking |
 | Rejected offline operations | Exportable and clearly marked |
-| Currency | Simple group-level value, changeable |
+| Currency | Locked after first transaction; integer minor units (Long) |
 | Invite links | Long-lived until replaced/revoked |
+| Claim verification | Short Authentication String (SAS 4-digit code) |
 | Offline duplicate names | Server authority → rename resolution |
 | Settlement deletion | Creator or Admin |
-| Settlement editing | Not allowed |
-| Settlement over debt | Rejected |
-| Non-participant payer | Only Active · Unclaimed |
+| Settlement editing | Not allowed (Delete + re-record only) |
+| Settlement over debt | Rejected (strictly capped at outstanding debt) |
+| Non-participant payer | Allowed for any active member (Claimed or Unclaimed) |
+| Super Admin recovery | Cascades to earliest active Admin after 30d inactivity |
 | Unclaimed participant | Allowed |
 | Unclaimed payer | Allowed |
 | Unclaimed settlement party | Allowed |
@@ -638,7 +646,7 @@ The product model is internally consistent after the review.
 | Permanent group deletion | Deferred |
 | JSON import | Read-only |
 | JSON clone | New independent group |
-| Sync | Local-first + server-authoritative |
+| Sync | Local-first + server-authoritative (Room + WorkManager) |
 | Conflict handling | Explicit and recoverable |
 | Technical sync history | Compacted |
 | Financial history | Permanent |
