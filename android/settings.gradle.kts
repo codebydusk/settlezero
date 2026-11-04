@@ -27,4 +27,6 @@ include(":core:model")
 include(":core:common")
 include(":core:domain")
 include(":core:database")
+include(":core:data")
+include(":core:sync")
 
