@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
@@ -59,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.settlezero.core.model.ActivityHistory
 import app.settlezero.core.ui.component.EmptyStateView
+import app.settlezero.core.ui.component.QrCodeView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -155,34 +157,81 @@ fun ActivityHistoryScreen(
             // Export Dialog
             if (uiState.showExportDialog && uiState.exportJsonString != null) {
                 val jsonText = uiState.exportJsonString!!
+                var showQrView by remember { mutableStateOf(false) }
 
                 AlertDialog(
                     onDismissRequest = { viewModel.dismissExportDialog() },
-                    title = { Text("Export Group (JSON)", fontWeight = FontWeight.Bold) },
+                    title = { Text("Export Group", fontWeight = FontWeight.Bold) },
                     text = {
-                        Column {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
-                                text = "Standardized portable JSON backup. Safe for offline storage and re-import.",
+                                text = "Standardized portable JSON backup. Safe for offline storage, scanning, and re-import.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(12.dp))
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(180.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = jsonText,
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        fontFamily = FontFamily.Monospace,
-                                        fontSize = 10.sp
-                                    ),
-                                    modifier = Modifier.padding(10.dp)
+                                FilterChip(
+                                    selected = !showQrView,
+                                    onClick = { showQrView = false },
+                                    label = { Text("JSON Document") }
                                 )
+                                FilterChip(
+                                    selected = showQrView,
+                                    onClick = { showQrView = true },
+                                    label = { Text("QR Code") },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.QrCode,
+                                            contentDescription = null,
+                                            modifier = Modifier.width(18.dp)
+                                        )
+                                    }
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            if (showQrView) {
+                                val compactJson = remember(jsonText) {
+                                    try {
+                                        jsonText.lineSequence().map { it.trim() }.joinToString("")
+                                    } catch (_: Exception) {
+                                        jsonText
+                                    }
+                                }
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    QrCodeView(
+                                        content = compactJson,
+                                        sizeDp = 220.dp
+                                    )
+                                }
+                            } else {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(180.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                ) {
+                                    Text(
+                                        text = jsonText,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 10.sp
+                                        ),
+                                        modifier = Modifier.padding(10.dp)
+                                    )
+                                }
                             }
                         }
                     },

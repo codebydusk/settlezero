@@ -17,6 +17,24 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Custom URI Scheme: settlezero://invite/{token} & settlezero://join/{token} -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="settlezero" android:host="invite" />
+                <data android:scheme="settlezero" android:host="join" />
+            </intent-filter>
+
+            <!-- App Links: https://settlezero.app/join/{token} & https://settlezero.app/invite/{token} -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="settlezero.app" android:pathPrefix="/join" />
+                <data android:scheme="https" android:host="settlezero.app" android:pathPrefix="/invite" />
+            </intent-filter>
         </activity>
     </application>
 

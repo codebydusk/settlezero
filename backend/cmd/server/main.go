@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -20,8 +21,31 @@ func main() {
 		port = "8080"
 	}
 
-	memStore := store.NewMemoryStore()
-	server := api.NewServer(memStore)
+	dbPath := os.Getenv("SETTLEZERO_DB_PATH")
+	var backendStore store.Store
+
+	if dbPath != "" {
+		schemaPath := os.Getenv("SETTLEZERO_SCHEMA_PATH")
+		if schemaPath == "" {
+			schemaPath = filepath.Join("migrations", "001_initial_schema.sql")
+		}
+		schemaBytes, err := os.ReadFile(schemaPath)
+		if err != nil {
+			log.Printf("Warning: Failed to read schema file at %s: %v. Creating sqlite store without initial schema.", schemaPath, err)
+		}
+		sqliteStore, err := store.NewSQLiteStore(dbPath, string(schemaBytes))
+		if err != nil {
+			log.Fatalf("Failed to initialize SQLite persistent store: %v", err)
+		}
+		defer sqliteStore.Close()
+		backendStore = sqliteStore
+		log.Printf("💾 SettleZero using persistent SQLite storage at: %s\n", dbPath)
+	} else {
+		backendStore = store.NewMemoryStore()
+		log.Println("🧠 SettleZero using in-memory ephemeral store")
+	}
+
+	server := api.NewServer(backendStore)
 
 	httpServer := &http.Server{
 		Addr:         ":" + port,
@@ -52,4 +76,3 @@ func main() {
 	}
 	fmt.Println("Server exited cleanly.")
 }
-

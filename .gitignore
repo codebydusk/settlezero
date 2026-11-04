@@ -1,39 +1,102 @@
-# Gradle files
-.gradle/
-build/
+# ==============================================================================
+# SettleZero Monorepo .gitignore
+# Tracks: android/ (Kotlin), backend/ (Go), web/ (React/Vite/TS), contracts/, docs/
+# ==============================================================================
 
-# Local configuration file (sdk path, etc)
-local.properties
-
-# Log/OS Files
+# --- Operating System & Editor Artifacts ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+*.tmp
+*.swp
+*.bak
 *.log
 
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.aab
-*.apk
-output-metadata.json
-
-# IntelliJ
-*.iml
+# IDEs
 .idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
 misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# --- Android & Gradle ---
+.gradle/
+build/
+*/build/
+bin/
+*/bin/
+
+# Local Android SDK configuration
+local.properties
+
+# Android build outputs & bundles
+*.apk
+*.ap_
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+output-metadata.json
+
+# Android Profiling & dumps
+*.hprof
+
+# Keystore signing keys
 *.jks
 *.keystore
 
-# Google Services (e.g. APIs or Firebase)
+# Google Services credentials
 google-services.json
 
-# Android Profiling
-*.hprof
+# --- Web Frontend (Node / Vite / React / TypeScript) ---
+node_modules/
+*/node_modules/
+dist/
+*/dist/
+.vite/
+*/.vite/
+*.tsbuildinfo
+.eslintcache
 
-# Go artifacts
+# Node logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variable overrides
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# --- Backend (Go & SQLite) ---
+backend/bin/
+backend/.gocache/
 *.exe
-.gocache/
-bin/
+*.test
+*.out
+cover.out
+coverage.html
+
+# Local SQLite databases, journals, WAL, and locks
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# --- Testing & ADB Device Dumps ---
+*_dump.xml
+dash.xml

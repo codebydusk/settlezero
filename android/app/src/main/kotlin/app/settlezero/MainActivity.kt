@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import app.settlezero.core.ui.theme.SettleZeroTheme
 import app.settlezero.feature.claim.ClaimViewModel
 import app.settlezero.feature.claim.JoinGroupScreen
@@ -203,7 +204,13 @@ fun SettleZeroAppNavigation(
             arguments = listOf(navArgument("token") {
                 type = NavType.StringType
                 defaultValue = ""
-            })
+            }),
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "settlezero://invite/{token}" },
+                navDeepLink { uriPattern = "settlezero://join/{token}" },
+                navDeepLink { uriPattern = "https://settlezero.app/join/{token}" },
+                navDeepLink { uriPattern = "https://settlezero.app/invite/{token}" }
+            )
         ) { backStackEntry ->
             val token = backStackEntry.arguments?.getString("token") ?: ""
             val claimViewModel: ClaimViewModel = viewModel(

@@ -3,6 +3,7 @@ package app.settlezero.feature.group
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Payments
@@ -53,12 +55,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.settlezero.core.model.Currency
 import app.settlezero.core.model.CurrencyAmount
 import app.settlezero.core.model.Expense
 import app.settlezero.core.ui.component.BalanceCard
 import app.settlezero.core.ui.component.MemberAvatar
+import app.settlezero.core.ui.component.QrCodeView
 import app.settlezero.core.ui.component.StatusBadge
 import app.settlezero.core.ui.theme.NegativeDebt
 import app.settlezero.core.ui.theme.PositiveCredit
@@ -80,6 +84,7 @@ fun GroupDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
+    var showInviteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -111,12 +116,7 @@ fun GroupDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        val link = viewModel.generateInviteLink()
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboard.setPrimaryClip(ClipData.newPlainText("SettleZero Invite", link))
-                        Toast.makeText(context, "Invite link copied to clipboard!", Toast.LENGTH_SHORT).show()
-                    }) {
+                    IconButton(onClick = { showInviteDialog = true }) {
                         Icon(Icons.Default.Share, contentDescription = "Share Invite")
                     }
                     IconButton(onClick = { showMenu = !showMenu }) {
@@ -418,6 +418,69 @@ fun GroupDetailScreen(
                     dismissButton = {
                         TextButton(onClick = { viewModel.onShowAddMemberDialog(false) }) {
                             Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            if (showInviteDialog && uiState.group != null) {
+                val group = uiState.group!!
+                val inviteUrl = viewModel.generateInviteLink()
+
+                AlertDialog(
+                    onDismissRequest = { showInviteDialog = false },
+                    title = {
+                        Text("Invite to ${group.name}", fontWeight = FontWeight.Bold)
+                    },
+                    text = {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Scan this QR code with another device to join immediately, or share the link.",
+                                style = MaterialTheme.typography.bodySmall,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            QrCodeView(
+                                content = inviteUrl,
+                                sizeDp = 200.dp
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = inviteUrl,
+                                style = MaterialTheme.typography.labelSmall,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            val sendIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, "Join my expense group '${group.name}' on SettleZero: $inviteUrl")
+                                type = "text/plain"
+                            }
+                            context.startActivity(Intent.createChooser(sendIntent, "Share Group Invite"))
+                        }) {
+                            Icon(Icons.Default.Share, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Share")
+                        }
+                    },
+                    dismissButton = {
+                        OutlinedButton(onClick = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            clipboard.setPrimaryClip(ClipData.newPlainText("SettleZero Invite", inviteUrl))
+                            Toast.makeText(context, "Invite link copied to clipboard!", Toast.LENGTH_SHORT).show()
+                            showInviteDialog = false
+                        }) {
+                            Icon(Icons.Default.ContentCopy, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Copy Link")
                         }
                     }
                 )
