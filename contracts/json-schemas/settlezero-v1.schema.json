@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://settlezero.app/schemas/settlezero-v1.schema.json",
+  "title": "SettleZero Group Export Format",
+  "description": "Standardized schema for offline data portability, backup, and read-only import in SettleZero.",
+  "type": "object",
+  "required": ["version", "exportedAt", "group", "members", "expenses", "settlements"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "exportedAt": {
+      "type": "integer",
+      "description": "Unix timestamp in milliseconds when the export was created"
+    },
+    "group": {
+      "type": "object",
+      "required": ["id", "name", "currencyCode", "currencyScale", "status", "inviteToken", "createdAt", "updatedAt"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "currencyCode": { "type": "string" },
+        "currencyScale": { "type": "integer", "minimum": 0, "maximum": 4 },
+        "status": { "type": "string", "enum": ["ACTIVE", "ARCHIVED"] },
+        "inviteToken": { "type": "string" },
+        "isCurrencyLocked": { "type": "boolean" },
+        "isReadOnly": { "type": "boolean" },
+        "createdAt": { "type": "integer" },
+        "updatedAt": { "type": "integer" }
+      }
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "groupId", "name", "role", "status", "createdAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "groupId": { "type": "string" },
+          "name": { "type": "string" },
+          "role": { "type": "string", "enum": ["SUPER_ADMIN", "ADMIN", "MEMBER"] },
+          "status": { "type": "string", "enum": ["ACTIVE_CLAIMED", "ACTIVE_UNCLAIMED", "ARCHIVED"] },
+          "createdAt": { "type": "integer" }
+        }
+      }
+    },
+    "expenses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "groupId", "description", "amountMinor", "payerMemberId", "createdByMemberId", "expenseDate", "createdAt", "splitType", "allocations"],
+        "properties": {
+          "id": { "type": "string" },
+          "groupId": { "type": "string" },
+          "description": { "type": "string" },
+          "amountMinor": { "type": "integer", "minimum": 1 },
+          "payerMemberId": { "type": "string" },
+          "createdByMemberId": { "type": "string" },
+          "expenseDate": { "type": "integer" },
+          "createdAt": { "type": "integer" },
+          "note": { "type": ["string", "null"] },
+          "splitType": { "type": "string", "enum": ["EQUAL", "UNEQUAL"] },
+          "isDeleted": { "type": "boolean" },
+          "deletedAt": { "type": ["integer", "null"] },
+          "deletedByMemberId": { "type": ["string", "null"] },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["memberId", "amountMinor"],
+              "properties": {
+                "memberId": { "type": "string" },
+                "amountMinor": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "settlements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "groupId", "payerMemberId", "recipientMemberId", "amountMinor", "settlementDate", "createdAt", "recordedByMemberId"],
+        "properties": {
+          "id": { "type": "string" },
+          "groupId": { "type": "string" },
+          "payerMemberId": { "type": "string" },
+          "recipientMemberId": { "type": "string" },
+          "amountMinor": { "type": "integer", "minimum": 1 },
+          "settlementDate": { "type": "integer" },
+          "createdAt": { "type": "integer" },
+          "recordedByMemberId": { "type": "string" },
+          "note": { "type": ["string", "null"] },
+          "isDeleted": { "type": "boolean" },
+          "deletedAt": { "type": ["integer", "null"] },
+          "deletedByMemberId": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "activityHistory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "groupId", "actorMemberId", "eventType", "summary", "entityId", "createdAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "groupId": { "type": "string" },
+          "actorMemberId": { "type": "string" },
+          "eventType": { "type": "string" },
+          "summary": { "type": "string" },
+          "entityId": { "type": "string" },
+          "createdAt": { "type": "integer" }
+        }
+      }
+    }
+  }
+}
+

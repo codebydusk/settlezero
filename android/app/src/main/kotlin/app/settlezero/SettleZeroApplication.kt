@@ -8,8 +8,12 @@ import app.settlezero.core.data.repository.ExpenseRepository
 import app.settlezero.core.data.repository.GroupRepository
 import app.settlezero.core.data.repository.LedgerRepository
 import app.settlezero.core.data.repository.MemberRepository
+import app.settlezero.core.data.repository.DataPortabilityRepository
+import app.settlezero.core.data.repository.HistoryRepository
+import app.settlezero.core.data.repository.OfflineFirstDataPortabilityRepository
 import app.settlezero.core.data.repository.OfflineFirstExpenseRepository
 import app.settlezero.core.data.repository.OfflineFirstGroupRepository
+import app.settlezero.core.data.repository.OfflineFirstHistoryRepository
 import app.settlezero.core.data.repository.OfflineFirstLedgerRepository
 import app.settlezero.core.data.repository.OfflineFirstMemberRepository
 import app.settlezero.core.data.repository.OfflineFirstSettlementRepository
@@ -26,6 +30,8 @@ interface AppContainer {
     val expenseRepository: ExpenseRepository
     val settlementRepository: SettlementRepository
     val ledgerRepository: LedgerRepository
+    val historyRepository: HistoryRepository
+    val dataPortabilityRepository: DataPortabilityRepository
     val syncManager: SyncManager
 }
 
@@ -56,6 +62,14 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
 
     override val ledgerRepository: LedgerRepository by lazy {
         OfflineFirstLedgerRepository(database)
+    }
+
+    override val historyRepository: HistoryRepository by lazy {
+        OfflineFirstHistoryRepository(database)
+    }
+
+    override val dataPortabilityRepository: DataPortabilityRepository by lazy {
+        OfflineFirstDataPortabilityRepository(database, timeProvider)
     }
 
     override val syncManager: SyncManager by lazy {

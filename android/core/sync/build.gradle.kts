@@ -34,11 +34,13 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:database"))
     implementation(project(":core:data"))
+    implementation(project(":core:network"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
 
@@ -51,5 +53,6 @@ dependencies {
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
+    testImplementation(libs.okhttp.mockwebserver)
 }
 

@@ -55,6 +55,7 @@ dependencies {
     implementation(project(":feature:expense"))
     implementation(project(":feature:settlement"))
     implementation(project(":feature:claim"))
+    implementation(project(":feature:history"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

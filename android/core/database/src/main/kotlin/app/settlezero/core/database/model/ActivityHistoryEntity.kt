@@ -36,3 +36,15 @@ data class ActivityHistoryEntity(
     val createdAt: Long
 )
 
+fun ActivityHistoryEntity.asDomain(): app.settlezero.core.model.ActivityHistory =
+    app.settlezero.core.model.ActivityHistory(
+        id = id,
+        groupId = groupId,
+        actorMemberId = actorMemberId,
+        eventType = eventType,
+        summary = summary,
+        entityId = entityId,
+        createdAt = createdAt
+    )
+
+

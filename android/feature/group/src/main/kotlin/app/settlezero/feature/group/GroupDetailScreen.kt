@@ -74,6 +74,7 @@ fun GroupDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAddExpense: (groupId: String) -> Unit,
     onNavigateToSettleUp: (groupId: String) -> Unit,
+    onNavigateToHistory: (groupId: String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -125,6 +126,13 @@ fun GroupDetailScreen(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        DropdownMenuItem(
+                            text = { Text("Activity History & Export") },
+                            onClick = {
+                                showMenu = false
+                                onNavigateToHistory(uiState.group?.id ?: return@DropdownMenuItem)
+                            }
+                        )
                         DropdownMenuItem(
                             text = { Text("Archive Group") },
                             onClick = {

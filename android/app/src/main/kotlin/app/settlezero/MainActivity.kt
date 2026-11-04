@@ -25,6 +25,8 @@ import app.settlezero.feature.group.GroupDashboardScreen
 import app.settlezero.feature.group.GroupDashboardViewModel
 import app.settlezero.feature.group.GroupDetailScreen
 import app.settlezero.feature.group.GroupDetailViewModel
+import app.settlezero.feature.history.ActivityHistoryScreen
+import app.settlezero.feature.history.HistoryViewModel
 import app.settlezero.feature.settlement.SettleUpScreen
 import app.settlezero.feature.settlement.SettlementViewModel
 
@@ -113,6 +115,38 @@ fun SettleZeroAppNavigation(
                 },
                 onNavigateToSettleUp = { id ->
                     navController.navigate("settle/$id")
+                },
+                onNavigateToHistory = { id ->
+                    navController.navigate("history/$id")
+                }
+            )
+        }
+
+        composable(
+            route = "history/{groupId}",
+            arguments = listOf(navArgument("groupId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString("groupId") ?: return@composable
+            val historyViewModel: HistoryViewModel = viewModel(
+                key = "history_$groupId",
+                factory = AppViewModelFactory {
+                    HistoryViewModel(
+                        groupId = groupId,
+                        groupRepository = appContainer.groupRepository,
+                        memberRepository = appContainer.memberRepository,
+                        historyRepository = appContainer.historyRepository,
+                        dataPortabilityRepository = appContainer.dataPortabilityRepository
+                    )
+                }
+            )
+
+            ActivityHistoryScreen(
+                viewModel = historyViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToClonedGroup = { newGroupId ->
+                    navController.navigate("group/$newGroupId") {
+                        popUpTo("dashboard")
+                    }
                 }
             )
         }

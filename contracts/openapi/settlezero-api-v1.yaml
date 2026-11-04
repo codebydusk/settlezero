@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: SettleZero Sync API
+  description: Lightweight REST API for operation-based synchronization, snapshots, and SAS claims in SettleZero.
+  version: 1.0.0
+paths:
+  /api/v1/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Server is running healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+
+  /api/v1/sync/batch:
+    post:
+      summary: Process batch of offline sync operations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [operations]
+              properties:
+                operations:
+                  type: array
+                  items:
+                    type: object
+                    required: [idempotencyKey, groupId, operationType, payloadJson, createdAt]
+                    properties:
+                      idempotencyKey:
+                        type: string
+                      groupId:
+                        type: string
+                      operationType:
+                        type: string
+                        enum: [CREATE_GROUP, ADD_MEMBER, CREATE_EXPENSE, DELETE_EXPENSE, RECORD_SETTLEMENT, DELETE_SETTLEMENT, UPDATE_MEMBER_ROLE, ARCHIVE_MEMBER, ARCHIVE_GROUP]
+                      payloadJson:
+                        type: string
+                      createdAt:
+                        type: integer
+      responses:
+        '200':
+          description: Batch sync result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        idempotencyKey:
+                          type: string
+                        status:
+                          type: string
+                          enum: [ACCEPTED, REJECTED, DUPLICATE]
+                        errorCode:
+                          type: string
+                        errorMessage:
+                          type: string
+
+  /api/v1/groups/{id}/snapshot:
+    get:
+      summary: Retrieve full authoritative snapshot of group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Full group snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Group not found
+
+  /api/v1/invites/{token}:
+    get:
+      summary: Privacy-preserving invite metadata lookup
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Group invite metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  groupId:
+                    type: string
+                  groupName:
+                    type: string
+                  currencyCode:
+                    type: string
+                  currencyScale:
+                    type: integer
+                  createdAt:
+                    type: integer
+        '404':
+          description: Invite token not found
+
+  /api/v1/groups/{id}/claims:
+    post:
+      summary: Submit a member spot claim with SAS verification code
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [memberId, claimantDeviceId, sasCode]
+              properties:
+                memberId:
+                  type: string
+                claimantDeviceId:
+                  type: string
+                sasCode:
+                  type: string
+      responses:
+        '200':
+          description: Claim submitted pending admin verification
+
+  /api/v1/groups/{id}/claims/{claimId}/approve:
+    post:
+      summary: Admin approves existing member claim after verifying SAS code
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: claimId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Claim approved
+
