@@ -97,6 +97,12 @@ coverage.html
 *.sqlite
 *.sqlite3
 
-# --- Testing & ADB Device Dumps ---
+# --- Testing, ADB Device Dumps & Screenshots ---
+# Ignore root-level screenshot PNGs and dump XMLs generated during device testing
+/*.png
+/*.xml
 *_dump.xml
+*dump*.xml
 dash.xml
+*screenshot*.png
+*screencap*.png
